@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ca">
+  <head>
+    <meta charset="utf-8">
+    <title>PRACTICA REALITAT AUGMENTADA</title>
+    <!-- Carreguem llibreries -->
+    <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-animation-component/dist/aframe-animation-component.min.js"></script>
+    <script src="https://jeromeetienne.github.io/AR.js/aframe/build/aframe-ar.js"></script>
+    <!-- Final carreguem llibreries -->
+  </head>
+
+  <body>
+
+    <a-scene embedded arjs>
+
+      <a-assets>
+        <img src="recursos/play.png" id="play" crossorigin="anonymous">
+        <img src="recursos/pause.png" id="pause" crossorigin="anonymous">
+        <img src="recursos/volume-normal.png" id="volume-normal" crossorigin="anonymous">
+        <img src="recursos/volume-mute.png" id="volume-mute" crossorigin="anonymous">
+        <img src="recursos/seek-back.png" id="seek-back" crossorigin="anonymous">
+        <img src="recursos/img-mondrian.jpg" id="img-mondrian">
+        <img src="recursos/fons-text.png" id="fons-text">
+        <video id="video-src" src="recursos/deconstructing-mondrian.mp4"></video>
+      </a-assets>
+
+      <!-- CURSOR -->
+      <a-entity position="0 0 0">
+        <a-entity camera look-controls mouse-cursor>
+          <a-cursor fuse="true" timeout="500" color="#F0F0F0" scale="0.6 0.6 0.6">
+          </a-cursor>
+        </a-entity>
+      </a-entity>
+      <!-- FINAL CURSOR -->
+
+      <!-- MARCADOR QUE CONTROLA IMATGE/VIDEO/TEXT -->
+      <a-marker type='pattern' url="recursos/pattern-cross.patt">
+
+        <!-- QUADRE MONDRIAN -->
+        <a-plane color="#CCC" height="2.5" width="1.8"
+         src="#img-mondrian" rotation="-90 0 0" position="0 0 0">
+        </a-plane>
+        <!-- FINAL QUADRE MONDRIAN -->
+
+        <!-- QUADRE TEXT -->
+        <a-entity position="1.9 0.1 -0.45" rotation="-90 0 0" text="font: https://cdn.aframe.io/fonts/Roboto-msdf.json; width: 1.6; lineHeight: 50; letterSpacing: 5; color: #ffffff; value: Piet Mondrian"></a-entity>
+        <a-entity position="1.8 0.1 0.05" rotation="-90 0 0" text="font: https://cdn.aframe.io/fonts/Roboto-msdf.json; width: 1.4; lineHeight: 50; letterSpacing: 5; color: #ffffff; value: Pieter Cornelis Mondrian (Amersfoort, Països Baixos, 1872 - Nova York, EUA, 1944), des de 1906 més conegut com a Piet Mondrian, fou un pintor abstracte. les seves obres van anar cap a l'abstraccio arribant a pintar en moltes d'elles simplement línies verticals i horitzontals, o afegint blocs de colors primaris molt ben equilibrats i impactants. Els colors entre blocs de gris i blanc acaben donant un extraordinari equilibri."></a-entity>
+        <a-plane color="#CCC" height="1.2" width="1.6"
+         src="#fons-text" rotation="-90 0 0" position="1.8 0 0">
+        </a-plane>
+        <!-- FINAL QUADRE TEXT -->
+
+        <!-- MEDIAS HOLDER -->
+          <a-sound id="alert-sound" src="src: url(recursos/action.wav)" autoplay="false" position="0 0 0"></a-sound>
+          <a-video id="video-screen" src="#video-src" position="-1.8 0.1 0" rotation="-90 0 0" width="1.7" height="1"></a-video>
+        <!-- FINAL MEDIAS HOLDER -->
+
+        <!-- CONTROLS DEL VIDEO-->
+          <a-image id="control-back" width="0.4" height="0.4" src="#seek-back" position="-2.4 0.1 0.8" rotation="-90 0 0" visible="false" scale="0.85 0.85 0.85"></a-image>
+          <a-image id="control-play" width="0.4" height="0.4" src="#play" position="-1.8 0.1 0.8" rotation="-90 0 0"></a-image>
+          <a-image id="control-volume" width="0.4" height="0.4" src="#volume-normal" position="-1.2 0.1 0.8" rotation="-90 0 0" visible="false" scale="0.75 0.75 0.75"></a-image>
+          <a-plane color="#CCC" height="0.45" width="1.7"
+           src="#fons-text" rotation="-90 0 0" position="-1.8 0 0.78">
+          </a-plane>
+        <!-- FINAL CONTROLS DEL VIDEO-->
+
+      </a-marker>
+      <!-- FINAL MARCADOR QUE CONTROLA IMATGE/VIDEP/TEXT -->
+
+    </a-scene>
+
+    <script src="recursos/js/AVideoPlayer.js"></script>
+
+    <!-- FUNCIONS VIDEO -->
+    <script type="text/javascript">
+      let scene = document.querySelector('a-scene');
+      var cursor = document.querySelector('a-cursor');
+
+      /**
+      * MODE CINEMA
+      */
+      scene.lightOff = function() {
+        scene.islightOn = true;
+        scene.removeAttribute('animation__fogback');
+        scene.setAttribute('animation__fog', "property: fog.color; to: #0c192a; dur: 800; easing: easeInQuad;");
+      }
+      scene.lightOn = function() {
+        scene.islightOn = false;
+        scene.removeAttribute('animation__fog');
+        scene.setAttribute('animation__fogback', "property: fog.color; to: #dbdedb; dur: 800");
+      }
+
+      /**
+      * AVideoPlayer
+      */
+      var videoPlayer = new AVideoPlayer();
+
+      /**
+      * CURSOR
+      */
+
+      // Cursor
+      let hideCursor = function() {
+        cursor.removeAttribute('animation__cursorHideLeave');
+        cursor.setAttribute('animation__cursorHideEnter', "property: scale; from: 0.6 0.6 0.6; to: 0 0 0; dur: 300; easing: easeInQuad;");
+      }
+      let showCursor = function() {
+        cursor.removeAttribute('animation__cursorHideEnter');
+        cursor.setAttribute('animation__cursorHideLeave', "property: scale; from: 0 0 0; to: 0.6 0.6 0.6; dur: 300; easing: easeInQuad;");
+      }
+      document.querySelector('#video-screen').addEventListener('mouseenter', hideCursor);
+      document.querySelector('#video-screen').addEventListener('mouseleave', showCursor);
+
+      // Accio del boto PLAY
+      document.querySelector('#control-play').addEventListener('click', function () {
+        if (videoPlayer.paused) {
+          scene.lightOn()
+        } else {
+          scene.lightOff();
+          hideCursor();
+        }
+      });
+    </script>
+  </body>
+</html>
